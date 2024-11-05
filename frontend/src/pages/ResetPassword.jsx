@@ -33,7 +33,7 @@ const ResetPassword = () => {
       toast.success('Password reset successful!');
       navigate('/login');
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Password reset failed');
+      toast.error('Password reset failed');
     } finally {
       setLoading(false);
     }

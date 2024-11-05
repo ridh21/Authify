@@ -45,7 +45,7 @@ const SignupPage = () => {
       toast.success("Registration successful! Please verify your email.");
       navigate("/verify-otp");
     } catch (error) {
-      toast.error(error.response?.data?.error || "Registration failed");
+      toast.error("Registration failed");
     } finally {
       setLoading(false);
     }

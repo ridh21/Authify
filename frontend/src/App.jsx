@@ -8,12 +8,16 @@ import Profile from './pages/Profile';
 import VerifyEmail from './pages/Verify';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import { ToastBar, Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <Router>
+      
       <AuthProvider>
+       
         <div className="min-h-screen bg-gray-50">
+          <Toaster position="bottom-right" />
           <Navbar />
           <Routes>
             <Route path="/" element={<Welcome />} />

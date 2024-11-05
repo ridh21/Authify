@@ -17,7 +17,7 @@ const ForgotPassword = () => {
       toast.success('Password reset OTP sent to your email!');
       navigate('/reset-password', { state: { email } });
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to send reset email');
+      toast.error('Failed to send reset email');
     } finally {
       setLoading(false);
     }

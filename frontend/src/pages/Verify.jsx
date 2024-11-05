@@ -23,7 +23,7 @@ const Verify = () => {
       toast.success('Email verified successfully!');
       navigate('/login');
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Verification failed');
+      toast.error('Verification failed');
     } finally {
       setLoading(false);
     }
