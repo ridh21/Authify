@@ -172,10 +172,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact 📧
 
-Your Name - [your.email@example.com](mailto:your.email@example.com)
+Ridham Patel - [ridhampatel2k4@gmail.com](mailto:ridhampatel2k4@gmail.com)
 
-Project Link: [https://github.com/yourusername/authcreator](https://github.com/yourusername/authcreator)
+Project Link: [https://github.com/yourusername/authcreator](https://github.com/ridh21/Authify)
 
----
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by Ridham Patel
