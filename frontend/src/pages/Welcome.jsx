@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaClock } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '../store/authSlice';
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const { user, login } = useAuth();
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -14,10 +16,10 @@ const Welcome = () => {
 
     if (token && urlUser) {
       const parsedUser = JSON.parse(decodeURIComponent(urlUser));
-      login(parsedUser, token);
+      dispatch(login(token, parsedUser));
       window.history.replaceState({}, document.title, '/welcome');
     }
-  }, []);
+  }, [dispatch]);
 
   const joinDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '';
 

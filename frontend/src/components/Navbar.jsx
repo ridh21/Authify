@@ -1,12 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../store/authSlice';
 
 const Navbar = () => {
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+
+  
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Define navigation items array
+  const navigationItems = [
+    { name: 'Page 1', path: '/page1' },
+    { name: 'Page 2', path: '/page2' },
+    { name: 'Page 3', path: '/page3' },
+    // Add more pages as needed
+  ];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -19,7 +31,7 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -27,9 +39,24 @@ const Navbar = () => {
     <nav className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link to="/welcome" className="flex items-center">
-            <span className="text-white text-xl font-bold">YourBrand</span>
-          </Link>
+          <div className="flex items-center space-x-8">
+            <Link to="/welcome" className="flex items-center">
+              <span className="text-white text-xl font-bold">Authify</span>
+            </Link>
+
+            {/* Dynamic Navigation Items */}
+            <div className="hidden md:flex space-x-6">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className="text-white hover:text-purple-200 transition-colors text-sm font-medium"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </div>
 
           {user ? (
             <div className="relative" ref={dropdownRef}>

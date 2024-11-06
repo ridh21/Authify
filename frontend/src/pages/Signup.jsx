@@ -1,56 +1,72 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../store/authSlice";
 import { FaUser, FaEnvelope, FaLock, FaCloudUploadAlt } from "react-icons/fa";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Link } from 'react-router-dom';
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [previewImage, setPreviewImage] = useState(null);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    image: null,
   });
-  const [image, setImage] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(file);
-      setPreviewImage(URL.createObjectURL(file));
+      setFormData({ ...formData, image: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     const submitData = new FormData();
-    submitData.append("username", formData.username);
-    submitData.append("email", formData.email);
-    submitData.append("password", formData.password);
-    if (image) {
-      submitData.append("image", image);
-    }
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] !== null) {
+        submitData.append(key, formData[key]);
+      }
+    });
 
     try {
-      await axios.post(`http://localhost:8000/api/auth/signup`, submitData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      toast.success("Registration successful! Please verify your email.");
+      const response = await axios.post(
+        `http://localhost:8000/api/auth/signup`,
+        submitData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      // Store token and user data
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // Update Redux store
+      dispatch(login(response.data.token, response.data.user));
+      
+      toast.success("Registration successful!");
       navigate("/verify-otp");
     } catch (error) {
-      toast.error("Registration failed");
+      console.log('Error details:', error.response?.data);
+      toast.error(error.response?.data?.error || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full mx-auto bg-white rounded-xl shadow-lg p-8">
@@ -61,7 +77,6 @@ const SignupPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Profile Image Upload */}
           <div className="flex flex-col items-center">
             <div className="relative w-32 h-32 mb-4">
               <img
@@ -84,7 +99,6 @@ const SignupPage = () => {
             </div>
           </div>
 
-          {/* Username Field */}
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-1">
               <FaUser className="mr-2 text-purple-600" />
@@ -102,7 +116,6 @@ const SignupPage = () => {
             />
           </div>
 
-          {/* Email Field */}
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-1">
               <FaEnvelope className="mr-2 text-purple-600" />
@@ -120,7 +133,6 @@ const SignupPage = () => {
             />
           </div>
 
-          {/* Password Field */}
           <div>
             <label className="flex items-center text-sm font-medium text-gray-700 mb-1">
               <FaLock className="mr-2 text-purple-600" />
@@ -138,7 +150,6 @@ const SignupPage = () => {
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -146,6 +157,7 @@ const SignupPage = () => {
           >
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
+
           <div className="mt-6 text-center">
             <span className="text-gray-600">Already have an account? </span>
             <Link

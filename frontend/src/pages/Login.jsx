@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEnvelope, FaLock, FaGoogle,FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { login } from "../store/authSlice";
 import axios from "axios";
 import toast from "react-hot-toast";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const dispatch = useDispatch();
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -20,19 +20,15 @@ const Login = () => {
         `http://localhost:8000/api/auth/login`,
         formData
       );
-
-      // Store both token and user data
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      await dispatch(login(response.data.token));
       toast.success("Login successful!");
       navigate("/welcome");
     } catch (error) {
-      toast.error("Something went wrong.");
+      toast.error(error.response?.data?.error || "Invalid credentials");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full mx-auto bg-white rounded-xl shadow-lg p-8">
@@ -92,7 +88,7 @@ const Login = () => {
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
-          
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>

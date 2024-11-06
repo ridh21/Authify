@@ -5,8 +5,6 @@ import profileRoutes from './routes/profileRoutes.js';
 import passport from "passport";
 import cookieParser from "cookie-parser";
 import session from 'express-session';
-// import session from 'express-session';
-
 import events from 'events';
 events.EventEmitter.defaultMaxListeners = 15;
 
@@ -24,17 +22,7 @@ app.use(session({
   cookie: { secure: false } // set to true in production with HTTPS
 }));
 
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       secure: process.env.NODE_ENV === "production",
-//       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-//     },
-//   })
-// );
+
 
 
 app.use(passport.initialize());
@@ -49,8 +37,9 @@ app.use('/api/profile', profileRoutes);
 
 
 app.get("/", (req, res) => {
-  res.send("Hello, world!");
+  res.send("Hello, World!");
 });
+
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

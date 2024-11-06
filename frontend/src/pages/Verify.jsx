@@ -1,29 +1,34 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaKey, FaEnvelope } from 'react-icons/fa';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { updateUser } from '../store/authSlice';
+import axios from "axios";
+import toast from "react-hot-toast";
+import { FaEnvelope, FaKey } from "react-icons/fa";
 
 const Verify = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
+    email: user?.email || '',
     otp: ''
   });
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/auth/verify-email`, 
+        `http://localhost:8000/api/auth/verify`,
         formData
       );
-      toast.success('Email verified successfully!');
-      navigate('/login');
+      await dispatch(updateUser({ ...user, verified: true }));
+      toast.success("Email verified successfully!");
+      navigate("/login");
     } catch (error) {
-      toast.error('Verification failed');
+      toast.error(error.response?.data?.error || "Verification failed");
     } finally {
       setLoading(false);
     }
@@ -40,7 +45,7 @@ const Verify = () => {
             Verify Your Email
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Please enter your email and the verification code
+            Please enter the verification code sent to your email
           </p>
         </div>
 

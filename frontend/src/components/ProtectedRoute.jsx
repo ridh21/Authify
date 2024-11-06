@@ -1,13 +1,17 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import { Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
+
+  const user = useSelector(state => state.auth.user);
+  const loading = useSelector(state => state.auth.loading);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -17,18 +21,20 @@ const ProtectedRoute = ({ children }) => {
       }
 
       try {
+        // Update the verification URL
         const response = await axios.get(
-          `http://localhost:8000/api/auth/verify`,
+          `http://localhost:8000/api/auth/verify-token`,
           {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
+
         setIsAuthenticated(response.data.isAuthenticated);
       } catch (error) {
-        localStorage.removeItem('token');
-        toast.error('Session expired. Please login again.');
+        localStorage.removeItem("token");
+        toast.error("Session expired. Please login again.");
       } finally {
         setIsLoading(false);
       }

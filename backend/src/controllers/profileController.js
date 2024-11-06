@@ -4,9 +4,14 @@ import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import { promisify } from 'util';
 
+// Delete the file after uploading
 const unlinkAsync = promisify(fs.unlink);
+
+// Initialize Prisma client
 const prisma = new PrismaClient();
 
+
+// Get user profile logic
 export const getProfile = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -25,6 +30,7 @@ export const getProfile = async (req, res) => {
   }
 };
 
+// Update user profile logic
 export const updateProfile = async (req, res) => {
   try {
     const { password } = req.body;

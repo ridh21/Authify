@@ -7,8 +7,15 @@ import fs from "fs";
 import { promisify } from "util";
 const unlinkAsync = promisify(fs.unlink);
 import passport from "../config/passport.js";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import path from 'path';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Use absolute path for uploads directory
+const uploadsDir = path.join(process.cwd(), "uploads");
 
 const prisma = new PrismaClient();
 
@@ -24,12 +31,17 @@ export const signup = async (req, res) => {
     let imageUrl = "https://ui-avatars.com/api/?background=random";
 
     if (req.file) {
-      // Upload to Cloudinary
-      const result = await cloudinary.uploader.upload(req.file.path);
+      // Use absolute path for file operations
+      const filePath = path.join(uploadsDir, req.file.filename);
+      const result = await cloudinary.uploader.upload(filePath);
       imageUrl = result.secure_url;
 
       // Delete local file after successful upload
-      await unlinkAsync(req.file.path);
+      try {
+        await unlinkAsync(filePath);
+      } catch (error) {
+        console.log('File already removed or does not exist');
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -56,14 +68,17 @@ export const signup = async (req, res) => {
       imageUrl,
     });
   } catch (error) {
-    // If there's an error and a file was uploaded, delete it
     if (req.file) {
-      await unlinkAsync(req.file.path);
+      const filePath = path.join(uploadsDir, req.file.filename);
+      try {
+        await unlinkAsync(filePath);
+      } catch (unlinkError) {
+        console.log('File already removed or does not exist');
+      }
     }
     res.status(500).json({ error: error.message });
   }
 };
-
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -236,8 +251,8 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-export const googleAuth = passport.authenticate('google', {
-  scope: ['profile', 'email']
+export const googleAuth = passport.authenticate("google", {
+  scope: ["profile", "email"],
 });
 
 // export const googleCallback = (req, res, next) => {
@@ -251,7 +266,6 @@ export const googleAuth = passport.authenticate('google', {
 //         expiresIn: '24h'
 //       });
 
-
 //     const userData = {
 //       id: user.id,
 //       username: user.username,
@@ -262,7 +276,7 @@ export const googleAuth = passport.authenticate('google', {
 
 //     req.session.user = userData;
 //     req.session.token = token;
-    
+
 //     const encodedToken = encodeURIComponent(token);
 //     const encodedUser = encodeURIComponent(JSON.stringify(userData));
 
@@ -273,18 +287,14 @@ export const googleAuth = passport.authenticate('google', {
 // })(req, res, next);
 // };
 
-
-
-
-
 export const googleCallback = (req, res, next) => {
-  passport.authenticate('google', async (err, user) => {
+  passport.authenticate("google", async (err, user) => {
     if (err || !user) {
-      return res.redirect('http://localhost:5173/login');
+      return res.redirect("http://localhost:5173/login");
     }
 
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: '24h'
+      expiresIn: "24h",
     });
 
     const userData = {
@@ -292,7 +302,7 @@ export const googleCallback = (req, res, next) => {
       username: user.username,
       email: user.email,
       image: user.image || profile.photos[0].value,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
     };
 
     // console.log('User data before redirect:', userData); // Debug log
@@ -300,6 +310,40 @@ export const googleCallback = (req, res, next) => {
     const encodedToken = encodeURIComponent(token);
     const encodedUser = encodeURIComponent(JSON.stringify(userData));
 
-    res.redirect(`http://localhost:5173/welcome?token=${encodedToken}&user=${encodedUser}`);
+    res.redirect(
+      `http://localhost:5173/welcome?token=${encodedToken}&user=${encodedUser}`
+    );
   })(req, res, next);
+};
+
+export const verifyToken = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        image: true,
+        createdAt: true
+      }
+    });
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    res.status(200).json({ 
+      isAuthenticated: true,
+      user 
+    });
+  } catch (error) {
+    res.status(401).json({ 
+      isAuthenticated: false,
+      error: "Invalid token" 
+    });
+  }
 };
