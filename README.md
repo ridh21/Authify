@@ -1,4 +1,4 @@
-# Authify - AuthCreator 🚀
+# ridhauth - AuthCreator 🚀
 
 A modern authentication system built with React, Node.js, and Prisma, featuring both traditional email-password and Google OAuth authentication.
 
@@ -37,7 +37,7 @@ A modern authentication system built with React, Node.js, and Prisma, featuring 
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/authcreator.git
+git clone https://github.com/ridh21/Authify.git
 ```
 
 ### 2. Install dependencies
@@ -144,18 +144,23 @@ GET /api/auth/google/callback
 
 ```prisma
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  username      String
-  password      String
-  image         String?
-  emailVerified Boolean   @default(false)
-  otp           String?
-  otpExpiresAt  DateTime?
-  provider      String?   @default("local")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id              Int      @id @default(autoincrement())
+  username        String
+  email           String   @unique
+  password        String?
+  provider        String? @default("local")
+  image           String   @default("https://ui-avatars.com/api/?name=RP")
+  imagePublicId   String?
+  emailVerified   Boolean  @default(false)
+  googleId        String?  @unique // Nullable for users who sign up with email/password
+  otp             String?  // For OTP verification
+  otpExpiresAt    DateTime? // OTP expiration time
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([email]) // Index on email for faster lookups
 }
+
 ```
 
 ## Contributing 🤝
@@ -174,7 +179,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Ridham Patel - [ridhampatel2k4@gmail.com](mailto:ridhampatel2k4@gmail.com)
 
-Project Link: [https://github.com/yourusername/authcreator](https://github.com/ridh21/Authify)
+Project Link: [https://github.com/ridh21/Authify](https://github.com/ridh21/Authify)
 
 
 Made with ❤️ by Ridham Patel

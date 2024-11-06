@@ -1,0 +1,15 @@
+{
+  "name": "ridhauth",
+  "version": "1.0.0",
+  "description": "CLI to create authentication boilerplate",
+  "main": "index.js",
+  "bin": {
+    "create-authapp": "./cli/index.js"
+  },
+  "scripts": {
+    "start": "node cli/index.js"
+  },
+  "keywords": ["authentication", "boilerplate", "react", "node"],
+  "author": "Your Name",
+  "license": "MIT"
+}
